@@ -14,8 +14,8 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import java.util.Hashtable;
 
-@TeleOp(name = "test92923 (Blocks to Java)")
-public class mechanism extends LinearOpMode {
+@TeleOp(name = "mechanism2Gamepad")
+public class mechanism2Gamepad extends LinearOpMode {
 
     private Servo launchTurn;
     private DcMotor leftLaunch;
@@ -37,7 +37,6 @@ public class mechanism extends LinearOpMode {
     private boolean runOnce = false;
     private boolean runOnce2 = false;
     private boolean runOnce3 = false;
-    private boolean runOnce4 = false;
     private String liftState = "Unconfigured";
     private boolean launcherEmpty;
     private Hashtable<String, Boolean> states = new Hashtable<>();
@@ -47,8 +46,7 @@ public class mechanism extends LinearOpMode {
     String returnState1 = "";
     long timeZero = 0;
     double servoPos1 = 0.0;
-    private double Angle = 0.0;
-    private int driveGamepad = 1; // DO NOT CHANGE
+    private int driveGamepad = 2; // DO NOT CHANGE
 
     private void BeginWaiting(String returnState, long wait)
     {
@@ -140,27 +138,15 @@ public class mechanism extends LinearOpMode {
                             timeSince = System.currentTimeMillis();
                             configSpeedInt -= 0.1;
                         }
-
                         // Get the current time in milliseconds. The value returned represents
                         // the number of milliseconds since midnight, January 1, 1970 UTC.
                         if (gamepad1.b && System.currentTimeMillis() >= timeSinceMotorSpeedMenuActivate + 500) {
                             while (true) {
-
                                 ((DcMotorEx) leftLaunch).setVelocity(-configSpeedInt * 1500);
                                 ((DcMotorEx) rightLaunch).setVelocity(configSpeedInt * 1500);
                                 telemetry.addData("Launcher angle", launchTurn.getPosition());
-                                double launchAngle = launchTurn.getPosition();
-                                if (launchAngle < 0.1) {
-                                    configSpeedInt = 1;
-                                }
-                                else if (launchAngle < 0.25) {
-                                    configSpeedInt = 0.9;
-                                }
-                                else {
-                                    configSpeedInt = 0.7;
-                                }
                                 if (gamepad1.right_bumper) {
-                                    //sleep(1000);
+                                    sleep(1000);
                                     // 1 is pushed to launch, 0.5 is open for pushing into launcher
                                     launchPush.setPosition(1);
                                     sleep(700);
@@ -171,15 +157,12 @@ public class mechanism extends LinearOpMode {
                                     break;
                                 }
                                 while (gamepad1.dpad_right) {
-                                    launchTurn.setPosition(0.5);
-                                    sleep(500);
                                     launchPush.setPosition(0.4);
-
 
                                     liftPush.setPosition(0);
 
                                 }
-                                
+
                                 if (gamepad1.a && System.currentTimeMillis() >= 300 + timeSince3) {
                                     if (servoPos1 < 0) {servoPos1 = 0.0;}
                                     // Get the current time in milliseconds. The value returned represents
@@ -244,21 +227,11 @@ public class mechanism extends LinearOpMode {
                 }
                 // Get the current time in milliseconds. The value returned represents
                 // the number of milliseconds since midnight, January 1, 1970 UTC.
-                
+
                 // Get the current time in milliseconds. The value returned represents
                 // the number of milliseconds since midnight, January 1, 1970 UTC.
                 // Get the current time in milliseconds. The value returned represents
                 // the number of milliseconds since midnight, January 1, 1970 UTC.
-                double launchAngle = launchTurn.getPosition();
-                if (launchAngle < 0.1) {
-                    configSpeedInt = 1;
-                }
-                else if (launchAngle < 0.25) {
-                    configSpeedInt = 0.9;
-                }
-                else {
-                    configSpeedInt = 0.7;
-                }
                 if (gamepad1.a && System.currentTimeMillis() >= 300 + timeSince3) {
                     if (servoPos1 < 0) {servoPos1 = 0.0;}
                     if (servoPos1 > 1) {servoPos1 = 1.0;}
@@ -286,7 +259,7 @@ public class mechanism extends LinearOpMode {
                     telemetry.update();
                 }
                 while (gamepad1.dpad_up) {
-                    if (!sensorLiftLimit.isPressed() || liftTouch.isPressed()) {
+                    if (!sensorLiftLimit.isPressed()) {
                         launchPush.setPosition(0.5);
                         ((DcMotorEx) liftUp).setVelocity(-250);
                     } else {
@@ -294,7 +267,7 @@ public class mechanism extends LinearOpMode {
                     }
                 }
                 ((DcMotorEx) liftUp).setVelocity(0);
-                while (gamepad1.dpad_down && (!liftTouch.isPressed() || sensorLiftLimit.isPressed())) { // more protections for the many who are stupid as a rock
+                while (gamepad1.dpad_down && !liftTouch.isPressed()) {
                     launchPush.setPosition(0.5);
                     ((DcMotorEx) liftUp).setVelocity(250);
                 }
@@ -313,7 +286,7 @@ public class mechanism extends LinearOpMode {
                 //intake.setPower(0);
                 while (gamepad1.dpad_right) {
                     launchPush.setPosition(0.4);
-                    launchTurn.setPosition(0.5);
+
                     liftPush.setPosition(0);
 
                 }
@@ -325,9 +298,6 @@ public class mechanism extends LinearOpMode {
 //                }
                 //liftPush.setPosition(0.7);
                 //boolean pressed = liftTouch.isPressed();
-                if (Boolean.TRUE.equals(states.get("greenBallDetectBottom")) || Boolean.TRUE.equals(states.get("pplBallDetectBottom"))) {
-                    intake.setPower(0);
-                }
                 if (liftTouch.isPressed()) {
                     telemetry.addData("liftTouch Status", "Pressed");
                 } else {
@@ -340,14 +310,7 @@ public class mechanism extends LinearOpMode {
                 }
                 telemetry.addData("intake on", intake.getPower() < 0);
                 telemetry.addData("Launcher angle", launchTurn.getPosition());
-                telemetry.addData("ball detected Top", sensorLift.green() >= 84 || sensorLift.blue() >= 84);
-
-                telemetry.addData("ball detected Bottom", sensorIntake.green() >= 115 || sensorIntake.blue() >= 115);
-
-                telemetry.addData("Launch motor power", ((DcMotorEx) leftLaunch).getVelocity() / 1500);
-                telemetry.update();
-
-                if (gamepad2.a) { driveGamepad = 2;}
+                //if (gamepad2.a) { driveGamepad = 2;}
                 /*if (gamepad2.a) {
                     getStates();
                     switch (liftState) {
