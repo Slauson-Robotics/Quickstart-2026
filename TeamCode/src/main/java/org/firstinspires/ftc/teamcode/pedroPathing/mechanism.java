@@ -111,6 +111,8 @@ public class mechanism extends LinearOpMode {
             // the number of milliseconds since midnight, January 1, 1970 UTC.
             timeSince3 = System.currentTimeMillis();
             while (opModeIsActive()) {
+                //Angle = launchTurn.getPosition();
+
                 Drive();
                 // Put loop blocks here.
                 telemetry.update();
@@ -145,7 +147,7 @@ public class mechanism extends LinearOpMode {
                         // the number of milliseconds since midnight, January 1, 1970 UTC.
                         if (gamepad1.b && System.currentTimeMillis() >= timeSinceMotorSpeedMenuActivate + 500) {
                             while (true) {
-
+                                //DONOTUSE Angle = launchTurn.getPosition();
                                 ((DcMotorEx) leftLaunch).setVelocity(-configSpeedInt * 1500);
                                 ((DcMotorEx) rightLaunch).setVelocity(configSpeedInt * 1500);
                                 telemetry.addData("Launcher angle", launchTurn.getPosition());
@@ -179,7 +181,9 @@ public class mechanism extends LinearOpMode {
                                     liftPush.setPosition(0);
 
                                 }
-                                
+                                launchTurn.setPosition(servoPos1);
+                                telemetry.addData("Motor power", ((DcMotorEx) leftLaunch).getVelocity() / 1500);
+                                //DONOTUSElaunchTurn.setPosition(Angle);
                                 if (gamepad1.a && System.currentTimeMillis() >= 300 + timeSince3) {
                                     if (servoPos1 < 0) {servoPos1 = 0.0;}
                                     // Get the current time in milliseconds. The value returned represents
@@ -250,11 +254,14 @@ public class mechanism extends LinearOpMode {
                 // Get the current time in milliseconds. The value returned represents
                 // the number of milliseconds since midnight, January 1, 1970 UTC.
                 double launchAngle = launchTurn.getPosition();
-                if (launchAngle < 0.1) {
+                if (launchAngle <= 0.1) {
                     configSpeedInt = 1;
                 }
                 else if (launchAngle < 0.25) {
                     configSpeedInt = 0.9;
+                }
+                else if (launchAngle == 0.7) {
+                    configSpeedInt = 0.7;
                 }
                 else {
                     configSpeedInt = 0.7;
@@ -315,8 +322,8 @@ public class mechanism extends LinearOpMode {
                     launchPush.setPosition(0.4);
                     launchTurn.setPosition(0.5);
                     liftPush.setPosition(0);
-
                 }
+                launchTurn.setPosition(servoPos1);
                 liftPush.setPosition(0.7);
 //                if (!gamepad2.a) {
 //                    sleep(500);
