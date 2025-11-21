@@ -134,7 +134,7 @@ public class autoBallsin2 extends OpMode {
             case "":
                 follower.followPath(paths.Path1, true); // REMOVE IF BEFORE COMP
                 // add check here if follower done
-                if (!follower.atParametricEnd()) {pathingState = "atPosition";}
+                if (follower.atParametricEnd()) {pathingState = "atPosition";}
                 break;
             case "atPosition":
                 launcherState = "ballInLauncher";
@@ -149,8 +149,8 @@ public class autoBallsin2 extends OpMode {
                 break;
             case "ballInLauncher":
                 if (!runOnce) {
-                    ((DcMotorEx) leftLaunch).setVelocity(-1500 * 0.55);
-                    ((DcMotorEx) rightLaunch).setVelocity(1500 * 0.55);
+                    ((DcMotorEx) leftLaunch).setVelocity(-1500 * 0.6);
+                    ((DcMotorEx) rightLaunch).setVelocity(1500 * 0.6);
                     timeSince1 = System.currentTimeMillis();
                     runOnce = true;
                 }
