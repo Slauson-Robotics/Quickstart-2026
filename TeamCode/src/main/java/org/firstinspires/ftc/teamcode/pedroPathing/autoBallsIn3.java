@@ -131,7 +131,7 @@ public class autoBallsIn3 extends OpMode {
             case "":
                 follower.followPath(paths.Path1, true); // REMOVE IF BEFORE COMP
                 // add check here if follower done
-                if (follower.atParametricEnd()) {pathingState = "atPosition";}
+                if (!follower.atParametricEnd()) {pathingState = "atPosition";}
                 break;
             case "atPosition":
                 launcherState = "ballInLauncher";
