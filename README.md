@@ -1,3 +1,5 @@
+# Slauson Robotics 25919 Pedro Pathing Quickstart - 2026
+This contains all tuning files, autonomous and teleop code for the DECODE season.
 ## NOTICE
 
 This repository contains the public FTC SDK for the DECODE (2025-2026) competition season.
