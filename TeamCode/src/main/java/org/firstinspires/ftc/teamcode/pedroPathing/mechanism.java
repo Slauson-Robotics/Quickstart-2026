@@ -14,9 +14,10 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import java.util.Hashtable;
 
-@TeleOp(name = "test92923 (Blocks to Java)")
+@TeleOp(name = "Comp v3.4.1 build 0")
 public class mechanism extends LinearOpMode {
-
+// I think blocks is good for testing things out quickly and making quick test programs,
+    // but Java is better for the long term projects
     private Servo launchTurn;
     private DcMotor leftLaunch;
     private DcMotor rightLaunch;
@@ -56,15 +57,7 @@ public class mechanism extends LinearOpMode {
         returnState1 = returnState;
         timeZero = System.currentTimeMillis();
     }
-    /**
-     * This sample contains the bare minimum Blocks for any regular OpMode. The 3 blue
-     * Comment Blocks show where to place Initialization code (runs once, after touching the
-     * DS INIT button, and before touching the DS Start arrow), Run code (runs once, after
-     * touching Start), and Loop code (runs repeatedly while the OpMode is active, namely not
-     * Stopped).
-     *
-     *
-     */
+    // TODO: add singletap move ball into launcher, cancel button, use state machine?
     @Override
     public void runOpMode() {
         double configSpeedInt = 0.5;
@@ -107,6 +100,7 @@ public class mechanism extends LinearOpMode {
         configSpeedInt = 1;
         if (opModeIsActive()) {
             // Put run blocks here.
+            // not bothering to remove the blocks comments that were converted over.
             // Get the current time in milliseconds. The value returned represents
             // the number of milliseconds since midnight, January 1, 1970 UTC.
             timeSince3 = System.currentTimeMillis();
@@ -152,15 +146,15 @@ public class mechanism extends LinearOpMode {
                                 ((DcMotorEx) rightLaunch).setVelocity(configSpeedInt * 1500);
                                 telemetry.addData("Launcher angle", launchTurn.getPosition());
                                 double launchAngle = launchTurn.getPosition();
-                                if (launchAngle < 0.1) {
-                                    configSpeedInt = 1;
-                                }
-                                else if (launchAngle < 0.25) {
-                                    configSpeedInt = 0.9;
-                                }
-                                else {
-                                    configSpeedInt = 0.7;
-                                }
+//                                if (launchAngle < 0.1) {
+//                                    configSpeedInt = 1;
+//                                }
+//                                else if (launchAngle < 0.25) {
+//                                    configSpeedInt = 0.9;
+//                                }
+//                                else {
+//                                    configSpeedInt = 0.7;
+//                                }
                                 if (gamepad1.right_bumper) {
                                     //sleep(1000);
                                     // 1 is pushed to launch, 0.5 is open for pushing into launcher
@@ -211,7 +205,8 @@ public class mechanism extends LinearOpMode {
                                 while (gamepad1.dpad_up) {
                                     if (!sensorLiftLimit.isPressed()) {
                                         launchPush.setPosition(0.5);
-                                        ((DcMotorEx) liftUp).setVelocity(-250);
+                                        telemetry.addData("Up at 250", "");
+                                        ((DcMotorEx) liftUp).setVelocity(400);
                                     } else {
                                         ((DcMotorEx) liftUp).setVelocity(0);
                                     }
@@ -219,7 +214,12 @@ public class mechanism extends LinearOpMode {
                                 ((DcMotorEx) liftUp).setVelocity(0);
                                 while (gamepad1.dpad_down && !liftTouch.isPressed()) {
                                     launchPush.setPosition(0.5);
-                                    ((DcMotorEx) liftUp).setVelocity(250);
+                                    telemetry.addData("Down at -250", "");
+                                    ((DcMotorEx) liftUp).setVelocity(-400);
+                                    if (liftTouch.isPressed()) {
+                                        ((DcMotorEx) liftUp).setVelocity(0);
+                                        break;
+                                    }
                                 }
                                 ((DcMotorEx) liftUp).setVelocity(0);
                                 if (gamepad1.dpad_left) {
@@ -295,7 +295,7 @@ public class mechanism extends LinearOpMode {
                 while (gamepad1.dpad_up) {
                     if (!sensorLiftLimit.isPressed() || liftTouch.isPressed()) {
                         launchPush.setPosition(0.5);
-                        ((DcMotorEx) liftUp).setVelocity(-250);
+                        ((DcMotorEx) liftUp).setVelocity(400);
                     } else {
                         ((DcMotorEx) liftUp).setVelocity(0);
                     }
@@ -303,7 +303,7 @@ public class mechanism extends LinearOpMode {
                 ((DcMotorEx) liftUp).setVelocity(0);
                 while (gamepad1.dpad_down && (!liftTouch.isPressed() || sensorLiftLimit.isPressed())) { // more protections for the many who are stupid as a rock
                     launchPush.setPosition(0.5);
-                    ((DcMotorEx) liftUp).setVelocity(250);
+                    ((DcMotorEx) liftUp).setVelocity(-400);
                 }
                 ((DcMotorEx) liftUp).setVelocity(0);
                 if (gamepad1.dpad_left) {
