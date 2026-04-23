@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import java.util.Hashtable;
 
-@TeleOp(name = "Comp v3.4.3 build T1")
+@TeleOp(name = "Comp v3.4.3 build T2")
 public class mechanism extends LinearOpMode {
 // I think blocks is good for testing things out quickly and making quick test programs,
     // but Java is better for the long term projects
@@ -349,7 +349,7 @@ public class mechanism extends LinearOpMode {
 //                        intakeMode = false;
 //                    }
 //                }
-                if (sensorIntake.green() >= 115 || sensorIntake.blue() >= 115) {
+                if (!(sensorIntake.green() >= 115 || sensorIntake.blue() >= 115)) {
                     intake.setPower(-1);
                 } else {
                     intake.setPower(0);
