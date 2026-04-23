@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import java.util.Hashtable;
 
-@TeleOp(name = "Comp v3.4.2 build 0")
+@TeleOp(name = "Comp v3.4.3 build T1")
 public class mechanism extends LinearOpMode {
 // I think blocks is good for testing things out quickly and making quick test programs,
     // but Java is better for the long term projects
@@ -92,7 +92,10 @@ public class mechanism extends LinearOpMode {
         rightBack.setDirection(DcMotor.Direction.REVERSE);
         // Put initialization blocks here.
         launchTurn.setDirection(Servo.Direction.FORWARD);
-        double ballCheck = -1;
+        boolean ballCheckComplete = false;
+        boolean ballInElevBottom = false;
+        boolean ballInElevTop = false;
+        boolean ballInLauncher = false;
         boolean goingDown = false;
         boolean goingUp = false;
         waitForStart();
@@ -223,7 +226,7 @@ public class mechanism extends LinearOpMode {
                                 if (goingDown && liftTouch.isPressed()) {
                                     ((DcMotorEx) liftUp).setVelocity(0);
                                 }
-                                ((DcMotorEx) liftUp).setVelocity(0);
+
                                 if (gamepad1.dpad_left) {
                                     if (!intakeMode && System.currentTimeMillis() >= timeSince6 + 1000) {
                                         intake.setPower(-1);
@@ -248,23 +251,36 @@ public class mechanism extends LinearOpMode {
                         telemetry.update();
                     }
                 }
-                if (gamepad1.left_bumper && ballCheck == -1) { // If left bumper pressed and automode not checked
+                if (gamepad1.left_bumper && !ballCheckComplete) { // If left bumper pressed and automode not checked
                     if (sensorIntake.green() >= 115 || sensorIntake.blue() >= 115) {
                         // ball detected Bottom
                         if (sensorLift.green() >= 84 || sensorLift.blue() >= 84) {
                             //if ball at top
-                            ballCheck = 1.1;
-                        } else {
-                            ballCheck = 1.0;}
+                            ballInElevTop = true;
+                            ballInElevBottom = true; ballCheckComplete=true;
+                        } else {ballInElevBottom = true;ballCheckComplete=true;}
                     } else if (sensorLift.green() >= 84 || sensorLift.blue() >= 84) {
-                        ballCheck = 0.1;
+                        ballInElevTop = true; ballCheckComplete = true;
                     } else {
                         //no balls
-                        ballCheck = 0.0;
+                        ballCheckComplete = true;
                     }
                 }
-                if (ballCheck != -1) {
-
+                if (ballCheckComplete) {
+                    if (!ballInElevBottom && !goingUp && !goingDown) {
+                        intake.setPower(-1);
+                    }
+                    if (liftTouch.isPressed() && ballInElevBottom && !ballInElevTop) {
+                        if (!sensorLiftLimit.isPressed()) {
+                            launchPush.setPosition(0.5);
+                            ((DcMotorEx) liftUp).setVelocity(400);
+                            goingUp = true;
+                        }
+                        if (goingUp && sensorLiftLimit.isPressed()) {
+                            ((DcMotorEx) liftUp).setVelocity(0);
+                            goingUp = false;
+                        }
+                    }
                 }
                 double launchAngle = launchTurn.getPosition();
                 if (launchAngle <= 0.1) {
