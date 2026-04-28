@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.teamcode.ExtendColorSensor;
+
 import java.util.Hashtable;
 
 @TeleOp(name = "Comp v3.4.3 build T2")
@@ -29,8 +31,8 @@ public class mechanism extends LinearOpMode {
     private DcMotor rightBack;
     private TouchSensor sensorLiftLimit;
     private TouchSensor liftTouch;
-    private ColorSensor sensorIntake;
-    private ColorSensor sensorLift;
+    private ExtendColorSensor sensorIntake;
+    private ExtendColorSensor sensorLift;
     private long timeSince4 = 0;
     private boolean runOnce = false;
     private boolean runOnce2 = false;
@@ -79,8 +81,8 @@ public class mechanism extends LinearOpMode {
         liftPush = hardwareMap.get(Servo.class, "liftPush");
         sensorLiftLimit = hardwareMap.get(TouchSensor.class, "sensorLiftLimit");
         liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
-        sensorIntake = hardwareMap.get(ColorSensor.class, "sensorIntake");
-        sensorLift = hardwareMap.get(ColorSensor.class, "sensorLift");
+        sensorIntake = new ExtendColorSensor(hardwareMap.get(ColorSensor.class, "sensorIntake"));
+        sensorLift = new ExtendColorSensor(hardwareMap.get(ColorSensor.class, "sensorLift"));
         //sensorLauncher = hardwareMap.get(ColorSensor.class, "sensorLauncher");
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftFront.setDirection(DcMotor.Direction.REVERSE);
@@ -252,19 +254,12 @@ public class mechanism extends LinearOpMode {
                     }
                 }
                 if (gamepad1.left_bumper && !ballCheckComplete) { // If left bumper pressed and automode not checked
-                    if (sensorIntake.green() >= 115 || sensorIntake.blue() >= 115) {
-                        // ball detected Bottom
-                        if (sensorLift.green() >= 84 || sensorLift.blue() >= 84) {
-                            //if ball at top
-                            ballInElevTop = true;
-                            ballInElevBottom = true; ballCheckComplete=true;
-                        } else {ballInElevBottom = true;ballCheckComplete=true;}
-                    } else if (sensorLift.green() >= 84 || sensorLift.blue() >= 84) {
-                        ballInElevTop = true; ballCheckComplete = true;
-                    } else {
-                        //no balls
-                        ballCheckComplete = true;
-                    }
+                    // ball detected Bottom
+                    ballInElevBottom = sensorIntake.ballPresent(115);
+                    //if ball at top
+                    ballInElevTop = sensorLift.ballPresent(84);
+                    //no balls
+                    ballCheckComplete = true;
                 }
                 if (ballCheckComplete) {
                     if (!ballInElevBottom && !goingUp && !goingDown) {
@@ -349,7 +344,7 @@ public class mechanism extends LinearOpMode {
 //                        intakeMode = false;
 //                    }
 //                }
-                if (!(sensorIntake.green() >= 115 || sensorIntake.blue() >= 115)) {
+                if (!(sensorIntake.ballPresent(115))) {
                     intake.setPower(-1);
                 } else {
                     intake.setPower(0);
@@ -384,9 +379,9 @@ public class mechanism extends LinearOpMode {
                 }
                 telemetry.addData("intake on", intake.getPower() < 0);
                 telemetry.addData("Launcher angle", launchTurn.getPosition());
-                telemetry.addData("ball detected Top", sensorLift.green() >= 84 || sensorLift.blue() >= 84);
+                telemetry.addData("ball detected Top", sensorLift.ballPresent(84));
 
-                telemetry.addData("ball detected Bottom", sensorIntake.green() >= 115 || sensorIntake.blue() >= 115);
+                telemetry.addData("ball detected Bottom", sensorIntake.ballPresent(115));
 
                 telemetry.addData("Launch motor power", ((DcMotorEx) leftLaunch).getVelocity() / 1500);
                 telemetry.update();
