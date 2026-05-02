@@ -6,11 +6,11 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -18,23 +18,18 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.sun.tools.javac.jvm.Code;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import kotlin._Assertions;
-
-@Autonomous(name = "Auton red side", group = "Autonomous")
+import org.firstinspires.ftc.teamcode.pedroPathing.redSideAuto;
+@Autonomous(name = "Auton blue side", group = "Autonomous")
 @Configurable // Panels
+public class blueSideAuto extends OpMode {
 
-public class autoBallsin2 extends OpMode {
-    private static final Logger log = LoggerFactory.getLogger(autoBallsin2.class);
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
     private int pathState; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
+    //private autoBallsin2.Paths paths; // Paths defined in the Paths class
     private String launcherState = "End";
     private String pathingState = "";
     private DcMotor leftLaunch;
@@ -57,6 +52,7 @@ public class autoBallsin2 extends OpMode {
     private Timer timer = new Timer();
     private String intakeState = "on";
     private boolean returnToEnd = false;
+    private CoordinateSystem coordinateSystem; // fucking shit isn't working
 
     long waitTime1 = 0;
     String returnState1 = "";
@@ -69,10 +65,9 @@ public class autoBallsin2 extends OpMode {
         timeZero = System.currentTimeMillis();
     }
 
-
     @Override
     public void init() {
-
+        panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         launchTurn = hardwareMap.get(Servo.class, "launchTurn");
         leftLaunch = hardwareMap.get(DcMotor.class, "leftLaunch");
         rightLaunch = hardwareMap.get(DcMotor.class, "rightLaunch");
@@ -86,7 +81,8 @@ public class autoBallsin2 extends OpMode {
         liftTouch=hardwareMap.get(TouchSensor.class, "liftTouch");
         sensorLiftLimit = hardwareMap.get(TouchSensor.class, "sensorLiftLimit");
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(124.428927680798, 124.428927680798, Math.toRadians(225)));
+        follower.setStartingPose(new Pose(22.084788029925186, 123.53117206982543, Math.toRadians(315)));
+
 
         paths = new Paths(follower); // Build paths
 
@@ -122,9 +118,9 @@ public class autoBallsin2 extends OpMode {
             Path1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(124.429, 124.429), new Pose(107.731, 106.474))
+                            new BezierLine(new Pose(22.084788029925186, 123.53117206982543), new Pose(36.44887780548628, 106.65336658354114))
                     )
-                    .setConstantHeadingInterpolation(Math.toRadians(225))
+                    .setConstantHeadingInterpolation(Math.toRadians(315))
                     .build();
         }
     }
@@ -150,7 +146,7 @@ public class autoBallsin2 extends OpMode {
             case "ballInLauncher":
                 if (!runOnce) {
                     ((DcMotorEx) leftLaunch).setVelocity(-1500 * 0.6);
-                    ((DcMotorEx) rightLaunch).setVelocity(1500 * 0.6);
+                    ((DcMotorEx) rightLaunch).setVelocity(1500* 0.6);
                     timeSince1 = System.currentTimeMillis();
                     runOnce = true;
                 }
@@ -191,7 +187,7 @@ public class autoBallsin2 extends OpMode {
                 if (!(sensorLift.green() >=84 || sensorLift.blue() >=84)) { //if no ball
                     // No ball to push, so we're done
                     liftState = "upBall2";
-                    
+
                     break;
                 } else if (returnToEnd) {liftState = ""; launcherState=""; break;}
                 launchPush.setPosition(0.4);
@@ -208,7 +204,7 @@ public class autoBallsin2 extends OpMode {
                     liftState = "upBall3"; // launch
                 } else if (sensorIntake.blue()>=115 || sensorIntake.green()>=115) {
                     liftState = "goDown-thenUp";
-                } else if (launcherFree && (sensorLift.green() >=84 || sensorLift.blue()>=84)) {
+                } else if (launcherFree && (sensorLift.green() >=84 || sensorLift.blue()>=84)){
                     liftState = "upBall";
                 } else {
                     liftState="upBall3-2";

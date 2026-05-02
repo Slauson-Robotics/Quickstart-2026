@@ -33,7 +33,6 @@ public class mechanism extends LinearOpMode {
     private TouchSensor liftTouch;
     private ExtendColorSensor sensorIntake;
     private ExtendColorSensor sensorLift;
-    private long timeSince4 = 0;
     private boolean runOnce = false;
     private boolean runOnce2 = false;
     private boolean runOnce3 = false;
@@ -62,11 +61,11 @@ public class mechanism extends LinearOpMode {
         double configSpeedInt = 0.5;
         boolean motorMenuActivated;
         String configSpeedTxt;
-        long timeSince3;
-        long timeSince;
+        long waitLaunchAngleControl;
+        long mLiftWait;
         long timeSinceMotorSpeedMenuActivate;
-        long timeSince2 = 0;
-        long timeSince6 = 0;
+        long waitLaunchTelemetryUpdate = 0;
+        long waitIntakeControl = 0;
         boolean intakeMode = false;
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
@@ -105,46 +104,45 @@ public class mechanism extends LinearOpMode {
         configSpeedInt = 1;
         if (opModeIsActive()) {
             // Put run blocks here.
-            // not bothering to remove the blocks comments that were converted over.
-            // Get the current time in milliseconds. The value returned represents
-            // the number of milliseconds since midnight, January 1, 1970 UTC.
-            timeSince3 = System.currentTimeMillis();
+            
+            
+            waitLaunchAngleControl = System.currentTimeMillis();
             while (opModeIsActive()) {
                 //Angle = launchTurn.getPosition();
 
                 Drive();
                 // Put loop blocks here.
                 telemetry.update();
-                // Get the current time in milliseconds. The value returned represents
-                // the number of milliseconds since midnight, January 1, 1970 UTC.
-                timeSince = System.currentTimeMillis();
-                if (gamepad1.b) {
+                
+                
+                mLiftWait = System.currentTimeMillis();
+                if (gamepad1.b) { // Quit mainloop and start new loop allowing for motors running
                     motorMenuActivated = true;
-                    // Get the current time in milliseconds. The value returned represents
-                    // the number of milliseconds since midnight, January 1, 1970 UTC.
+                    
+                    
                     timeSinceMotorSpeedMenuActivate = System.currentTimeMillis();
                     while (opModeIsActive()) {
-                        telemetry.addData(configSpeedTxt, configSpeedInt);
+                        telemetry.addData(configSpeedTxt, configSpeedInt); //show instructions
                         telemetry.addData("Tip", "Press X to exit");
-                        // Get the current time in milliseconds. The value returned represents
-                        // the number of milliseconds since midnight, January 1, 1970 UTC.
-                        // Get the current time in milliseconds. The value returned represents
-                        // the number of milliseconds since midnight, January 1, 1970 UTC.
-                        if (gamepad1.dpad_up && System.currentTimeMillis() >= timeSince + 200 && !(configSpeedInt >= 1)) {
-                            // Get the current time in milliseconds. The value returned represents
-                            // the number of milliseconds since midnight, January 1, 1970 UTC.
-                            timeSince = System.currentTimeMillis();
+                        
+                        
+                        
+                        // Control launch speed before start motors
+                        if (gamepad1.dpad_up && System.currentTimeMillis() >= mLiftWait + 200 && !(configSpeedInt >= 1)) {
+                            
+                            
+                            mLiftWait = System.currentTimeMillis();
                             configSpeedInt += 0.1;
-                        } else if (gamepad1.dpad_down && System.currentTimeMillis() >= timeSince + 200 && !(configSpeedInt <= -1)) {
-                            // Get the current time in milliseconds. The value returned represents
-                            // the number of milliseconds since midnight, January 1, 1970 UTC.
-                            timeSince = System.currentTimeMillis();
+                        } else if (gamepad1.dpad_down && System.currentTimeMillis() >= mLiftWait + 200 && !(configSpeedInt <= -1)) {
+                            
+                            
+                            mLiftWait = System.currentTimeMillis();
                             configSpeedInt -= 0.1;
                         }
 
-                        // Get the current time in milliseconds. The value returned represents
-                        // the number of milliseconds since midnight, January 1, 1970 UTC.
-                        if (gamepad1.b && System.currentTimeMillis() >= timeSinceMotorSpeedMenuActivate + 500) {
+                        
+                        
+                        if (gamepad1.b && System.currentTimeMillis() >= timeSinceMotorSpeedMenuActivate + 500) { // Start motor loop / check if 500ms has passed
                             while (true) {
                                 //DONOTUSE Angle = launchTurn.getPosition();
                                 ((DcMotorEx) leftLaunch).setVelocity(-configSpeedInt * 2000);
@@ -160,18 +158,18 @@ public class mechanism extends LinearOpMode {
 //                                else {
 //                                    configSpeedInt = 0.7;
 //                                }
-                                if (gamepad1.right_bumper) {
+                                if (gamepad1.right_bumper) { // Launch ball if right bumper pressed
                                     //sleep(1000);
                                     // 1 is pushed to launch, 0.5 is open for pushing into launcher
                                     launchPush.setPosition(1);
                                     sleep(700);
                                     launchPush.setPosition(0.5);
-                                } else if (gamepad1.x) {
+                                } else if (gamepad1.x) { // If x pressed, cut power to motors and return to normal loop
                                     leftLaunch.setPower(0);
                                     rightLaunch.setPower(0);
                                     break;
                                 }
-                                while (gamepad1.dpad_right) {
+                                while (gamepad1.dpad_right) { //push into launcher
                                     launchTurn.setPosition(0.5);
                                     sleep(500);
                                     launchPush.setPosition(0.4);
@@ -183,35 +181,35 @@ public class mechanism extends LinearOpMode {
                                 launchTurn.setPosition(servoPos1);
                                 telemetry.addData("Motor power", ((DcMotorEx) leftLaunch).getVelocity() / 1500);
                                 //DONOTUSElaunchTurn.setPosition(Angle);
-                                if (gamepad1.a && System.currentTimeMillis() >= 300 + timeSince3) {
+                                if (gamepad1.a && System.currentTimeMillis() >= 300 + waitLaunchAngleControl) {// move launch angle up, wait 300ms
                                     if (servoPos1 < 0) {
                                         servoPos1 = 0.0;
                                     }
-                                    // Get the current time in milliseconds. The value returned represents
-                                    // the number of milliseconds since midnight, January 1, 1970 UTC.
-                                    timeSince3 = System.currentTimeMillis();
+                                    
+                                    
+                                    waitLaunchAngleControl = System.currentTimeMillis();
                                     launchTurn.setPosition(servoPos1 + 0.1);// TODO: CHANGE ME
                                     servoPos1 += 0.1;
-                                    // Get the current time in milliseconds. The value returned represents
-                                    // the number of milliseconds since midnight, January 1, 1970 UTC.
-                                    timeSince2 = System.currentTimeMillis();
-                                } else if (gamepad1.y && System.currentTimeMillis() >= 300 + timeSince3) {
+                                    
+                                    
+                                    waitLaunchTelemetryUpdate = System.currentTimeMillis();
+                                } else if (gamepad1.y && System.currentTimeMillis() >= 300 + waitLaunchAngleControl) { //move launch angle down, wait 300ms
                                     if (servoPos1 < 0) {
                                         servoPos1 = 0.0;
                                     }
-                                    // Get the current time in milliseconds. The value returned represents
-                                    // the number of milliseconds since midnight, January 1, 1970 UTC.
-                                    timeSince3 = System.currentTimeMillis();
+                                    
+                                    
+                                    waitLaunchAngleControl = System.currentTimeMillis();
                                     launchTurn.setPosition(servoPos1 - 0.1); // TODO: CHANGE ME
                                     servoPos1 -= 0.1;
-                                    // Get the current time in milliseconds. The value returned represents
-                                    // the number of milliseconds since midnight, January 1, 1970 UTC.
-                                    timeSince2 = System.currentTimeMillis();
+                                    
+                                    
+                                    waitLaunchTelemetryUpdate = System.currentTimeMillis();
                                 }
-                                if (System.currentTimeMillis() >= 150 + timeSince2) {
+                                if (System.currentTimeMillis() >= 150 + waitLaunchTelemetryUpdate) {
                                     telemetry.update();
                                 }
-                                if (gamepad1.dpad_up && !sensorLiftLimit.isPressed()) {
+                                if (gamepad1.dpad_up && !sensorLiftLimit.isPressed()) { // move lift up
                                     launchPush.setPosition(0.5);
                                     ((DcMotorEx) liftUp).setVelocity(400);
                                     goingUp = true;
@@ -220,7 +218,7 @@ public class mechanism extends LinearOpMode {
                                     ((DcMotorEx) liftUp).setVelocity(0);
                                 }
 
-                                if (gamepad1.dpad_down && !liftTouch.isPressed()) { // more protections for the many who are stupid as a rock
+                                if (gamepad1.dpad_down && !liftTouch.isPressed()) { // move lift down
                                     launchPush.setPosition(0.5);
                                     ((DcMotorEx) liftUp).setVelocity(-400);
                                     goingDown = true;
@@ -229,14 +227,14 @@ public class mechanism extends LinearOpMode {
                                     ((DcMotorEx) liftUp).setVelocity(0);
                                 }
 
-                                if (gamepad1.dpad_left) {
-                                    if (!intakeMode && System.currentTimeMillis() >= timeSince6 + 1000) {
+                                if (gamepad1.dpad_left) {//intake
+                                    if (!intakeMode && System.currentTimeMillis() >= waitIntakeControl + 1000) {
                                         intake.setPower(-1);
                                         intakeMode = true;
-                                        timeSince6 = System.currentTimeMillis();
-                                    } else if (intakeMode && System.currentTimeMillis() >= timeSince6 + 1000) {
+                                        waitIntakeControl = System.currentTimeMillis();
+                                    } else if (intakeMode && System.currentTimeMillis() >= waitIntakeControl + 1000) {
                                         intake.setPower(0);
-                                        timeSince6 = System.currentTimeMillis();
+                                        waitIntakeControl = System.currentTimeMillis();
                                         intakeMode = false;
                                     }
                                 }
@@ -253,7 +251,7 @@ public class mechanism extends LinearOpMode {
                         telemetry.update();
                     }
                 }
-                if (gamepad1.left_bumper && !ballCheckComplete) { // If left bumper pressed and automode not checked
+                if (gamepad1.left_bumper && !ballCheckComplete) { // If left bumper is pressed and states not checked
                     // ball detected Bottom
                     ballInElevBottom = sensorIntake.ballPresent(115);
                     //if ball at top
@@ -261,7 +259,7 @@ public class mechanism extends LinearOpMode {
                     //no balls
                     ballCheckComplete = true;
                 }
-                if (ballCheckComplete) {
+                if (ballCheckComplete) {//Auton logic
                     if (!ballInElevBottom && !goingUp && !goingDown) {
                         intake.setPower(-1);
                     }
@@ -290,33 +288,33 @@ public class mechanism extends LinearOpMode {
                 else {
                     configSpeedInt = 0.7;
                 }
-                if (gamepad1.a && System.currentTimeMillis() >= 300 + timeSince3) {
+                if (gamepad1.a && System.currentTimeMillis() >= 300 + waitLaunchAngleControl) { // move launcher up
                     if (servoPos1 < 0) {servoPos1 = 0.0;}
                     if (servoPos1 > 1) {servoPos1 = 1.0;}
-                    // Get the current time in milliseconds. The value returned represents
-                    // the number of milliseconds since midnight, January 1, 1970 UTC.
-                    timeSince3 = System.currentTimeMillis();
+                    
+                    
+                    waitLaunchAngleControl = System.currentTimeMillis();
                     launchTurn.setPosition(servoPos1 + 0.1);// TODO: CHANGE ME
                     servoPos1 +=0.1;
-                    // Get the current time in milliseconds. The value returned represents
-                    // the number of milliseconds since midnight, January 1, 1970 UTC.
-                    timeSince2 = System.currentTimeMillis();
-                } else if (gamepad1.y && System.currentTimeMillis() >= 300 + timeSince3) {
+                    
+                    
+                    waitLaunchTelemetryUpdate = System.currentTimeMillis();
+                } else if (gamepad1.y && System.currentTimeMillis() >= 300 + waitLaunchAngleControl) { //move launcher down
                     if (servoPos1 < 0) {servoPos1 = 0.0;}
                     if (servoPos1 > 1) {servoPos1 = 1.0;}
-                    // Get the current time in milliseconds. The value returned represents
-                    // the number of milliseconds since midnight, January 1, 1970 UTC.
-                    timeSince3 = System.currentTimeMillis();
+                    
+                    
+                    waitLaunchAngleControl = System.currentTimeMillis();
                     launchTurn.setPosition(servoPos1 - 0.1); // TODO: CHANGE ME
                     servoPos1 -=0.1;
-                    // Get the current time in milliseconds. The value returned represents
-                    // the number of milliseconds since midnight, January 1, 1970 UTC.
-                    timeSince2 = System.currentTimeMillis();
+                    
+                    
+                    waitLaunchTelemetryUpdate = System.currentTimeMillis();
                 }
-                if (System.currentTimeMillis() >= 150 + timeSince2) {
+                if (System.currentTimeMillis() >= 150 + waitLaunchTelemetryUpdate) {
                     telemetry.update();
                 }
-                if (gamepad1.dpad_up && !sensorLiftLimit.isPressed()) {
+                if (gamepad1.dpad_up && !sensorLiftLimit.isPressed()) { // lift up
                     launchPush.setPosition(0.5);
                     ((DcMotorEx) liftUp).setVelocity(400);
                     goingUp = true;
@@ -325,22 +323,22 @@ public class mechanism extends LinearOpMode {
                     ((DcMotorEx) liftUp).setVelocity(0);
                 }
 
-                if (gamepad1.dpad_down && !liftTouch.isPressed()) { // more protections for the many who are stupid as a rock
+                if (gamepad1.dpad_down && !liftTouch.isPressed()) { // lift down
                     launchPush.setPosition(0.5);
                     ((DcMotorEx) liftUp).setVelocity(-400);
                     goingDown = true;
                 }
-                if (goingDown && liftTouch.isPressed()) {
+                if (goingDown && liftTouch.isPressed()) {//stop if at limit
                     ((DcMotorEx) liftUp).setVelocity(0);
                 }
 //                if (gamepad1.dpad_left) {
-//                    if (!intakeMode && System.currentTimeMillis() >= timeSince6 + 1000) {
+//                    if (!intakeMode && System.currentTimeMillis() >= waitIntakeControl + 1000) {
 //                        intake.setPower(-1);
 //                        intakeMode = true;
-//                        timeSince6 = System.currentTimeMillis();
-//                    }else if (intakeMode && System.currentTimeMillis() >= timeSince6 + 1000) {
+//                        waitIntakeControl = System.currentTimeMillis();
+//                    }else if (intakeMode && System.currentTimeMillis() >= waitIntakeControl + 1000) {
 //                        intake.setPower(0);
-//                        timeSince6 = System.currentTimeMillis();
+//                        waitIntakeControl = System.currentTimeMillis();
 //                        intakeMode = false;
 //                    }
 //                }
@@ -350,7 +348,7 @@ public class mechanism extends LinearOpMode {
                     intake.setPower(0);
                 }
                 //intake.setPower(0);
-                while (gamepad1.dpad_right) {
+                while (gamepad1.dpad_right) {//push into launcher
                     launchPush.setPosition(0.4);
                     launchTurn.setPosition(0.5);
                     liftPush.setPosition(0);
@@ -387,140 +385,7 @@ public class mechanism extends LinearOpMode {
                 telemetry.update();
 
                 if (gamepad2.a) { driveGamepad = 2;}
-                /*if (gamepad2.a) {
-                    getStates();
-                    switch (liftState) {
-                        case "Unconfigured":
-
-                            if (Boolean.TRUE.equals(states.get("atBottom")) && (Boolean.TRUE.equals(states.get("greenBallDetectBottom")) || Boolean.TRUE.equals(states.get("pplBallDetectBottom")))) {
-                                // If lift is at bottom and ball is detected AT BOTTOM OF lift
-//                            if (Boolean.TRUE.equals(states.get("greenBallDetectTop")) || Boolean.TRUE.equals(states.get("pplBallDetectTop"))) {
-//                                // If a ball is detected ON LIFT (lift is at top)
-//                                if (!runOnce){
-//                                    launchPush.setPosition(0.4);
-//                                    liftPush.setPosition(0);
-//                                    timeSince4 = System.currentTimeMillis();
-//                                    runOnce =true;
-//                                }
-//
-//                                if (System.currentTimeMillis() >= timeSince4 + 1000) {
-//
-//                                }
-//
-//                            }
-                                // If lift is at bottom then balls cannot be at top, so above is impossible
-                                liftState = "D-B";// Down, ball
-
-                            } else if (Boolean.TRUE.equals(states.get("atBottom")) && !(Boolean.TRUE.equals(states.get("greenBallDetectBottom")) || Boolean.TRUE.equals(states.get("pplBallDetectBottom")))){
-                                liftState = "D-N"; // Down, no ball
-
-                            } else if (Boolean.TRUE.equals(states.get("atTop")) && (Boolean.TRUE.equals(states.get("greenBallDetectTop")) || Boolean.TRUE.equals(states.get("pplBallDetectTop")))){
-                                liftState = "U-B";
-
-                            } else if (Boolean.TRUE.equals(states.get("atTop")) && !(Boolean.TRUE.equals(states.get("greenBallDetectTop")) || Boolean.TRUE.equals(states.get("pplBallDetectTop")))){
-                                liftState = "U-N";
-
-                            }
-                            break;
-
-                        case "D-B": //Down, ball
-                            telemetry.addData("D", "getStates finished");
-                            while (!sensorLiftLimit.isPressed()) {//Lift until at launch height
-
-                                launchPush.setPosition(0.5);
-                                ((DcMotorEx) liftUp).setVelocity(-250);
-                            }
-                            ((DcMotorEx) liftUp).setVelocity(0);
-                            liftState = "U-B"; //Now the lift is up and the ball is still in
-                            break;
-                        case "U-B":
-                            telemetry.addData("Case U-B", "getStates finished");
-                            //if (!runOnce){
-                                launchPush.setPosition(0.4); // open tray
-                            waitTime1 = 1000;
-                            timeZero = System.currentTimeMillis();
-                            returnState1 = "lifted1";
-                            liftState = "Wait";
-                            //    timeSince4 = System.currentTimeMillis(); // start waiting
-                            //    runOnce =true;
-                            //}
-                            //if (System.currentTimeMillis() >= timeSince4 + 1000) { // if 1s passed
-                            //    telemetry.addData("Thing", "1s passed");
-                            //    telemetry.update();
-                            //    liftState = "lifted1";
-                            //}
-                            break;
-                        case "lifted1":
-                            telemetry.addData("lifted1", "getStates finished");
-                            //if (Boolean.TRUE.equals(states.get("greenBallDetectTop")) || Boolean.TRUE.equals(states.get("pplBallDetectTop"))) { //Ball failed to be pushed in.
-                                liftPush.setPosition(0); //push
-                                liftState = "Wait";
-                                waitTime1 = 1000;
-                                timeZero = System.currentTimeMillis();
-                                returnState1 = "liftretract";
-                                runOnce = false;
-                            //}
-//                            } else {
-//                                liftPush.setPosition(0.7); //retract
-//                                liftState = "End";
-//                            }
-                            break;
-                        case "liftretract":
-                            telemetry.addData("liftretract", "getStates finished");
-                            liftPush.setPosition(0.7); //retracted
-                            liftState = "goDown";//need to go down here
-                            launcherState = "Off-In";
-                            break;
-                        case "goDown":
-                            while (!liftTouch.isPressed()) {
-                                launchPush.setPosition(0.5);
-                                ((DcMotorEx) liftUp).setVelocity(250);
-                            }
-                            ((DcMotorEx) liftUp).setVelocity(0);
-                            break;
-                        case "End":
-                            telemetry.addData("End", "getStates finished");
-                            break;
-                        case "Wait":
-                            //if (!runOnce2) {
-
-                            //    runOnce2 = true;
-                            //}
-                            telemetry.addData("Waiting", "getStates finished");
-                            if (System.currentTimeMillis() >= timeZero + waitTime1) {
-                                liftState = returnState1;
-                                break;
-                            }
-                    }
-                    telemetry.update();
-
-
-                switch (launcherState) {
-                    case "Off-In":
-                        ((DcMotorEx) rightLaunch).setVelocity(1500);
-                        ((DcMotorEx) leftLaunch).setVelocity(-1500);
-                        sleep(2000);
-                        //launch motors on
-                        launchPush.setPosition(1);
-                        sleep(700);
-                        launchPush.setPosition(0.5);
-                        ((DcMotorEx) rightLaunch).setVelocity(0);
-                        ((DcMotorEx) leftLaunch).setVelocity(0); // turn off motors
-                        launcherState = "";
-                        break;
-                    case "On-In":
-                        launchPush.setPosition(1);
-                        sleep(700);
-                        launchPush.setPosition(0.5);
-                        launcherState = "";
-                        ((DcMotorEx) rightLaunch).setVelocity(0);
-                        ((DcMotorEx) leftLaunch).setVelocity(0); // turn off motors
-                        break;
-                    default:
-                        telemetry.update();
-                        break;
-                }
-                }*/
+                
             }
         }
     }
