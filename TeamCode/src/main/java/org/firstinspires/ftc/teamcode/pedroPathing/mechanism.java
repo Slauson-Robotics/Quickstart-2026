@@ -15,26 +15,24 @@ import java.util.Hashtable;
 
 @TeleOp(name = "Comp v3.4.3 build T2")
 public class mechanism extends LinearOpMode {
-
-	//------------HARWDARE------------------
-	
-	private Servo launchTurn; // triggers launching the ball
-    private DcMotor leftLaunch; // spinning launching mechanism
-    private DcMotor rightLaunch; // spinning launching mechanism
-    private Servo launchPush; // servo pushing the ball in the launcher
-    private DcMotor liftUp; // elevator motor (rack and pinion)
-    private CRServo intake; // intake motors
-    private Servo liftPush; // servo pushing the ball from the elevator to the launcher
-    private ColorSensor sensorLauncher; // color sensor detecting ball in launcher
-    private DcMotor leftFront; // drive motors
-    private DcMotor rightFront; 
+// I think blocks is good for testing things out quickly and making quick test programs,
+    // but Java is better for the long term projects
+    private Servo launchTurn;
+    private DcMotor leftLaunch;
+    private DcMotor rightLaunch;
+    private Servo launchPush;
+    private DcMotor liftUp;
+    private CRServo intake;
+    private Servo liftPush;
+    private ColorSensor sensorLauncher;
+    private DcMotor leftFront;
+    private DcMotor rightFront;
     private DcMotor leftBack;
     private DcMotor rightBack;
-    private TouchSensor sensorLiftLimit; // upper limit elevator sensor
-    private TouchSensor liftTouch; // bottom limit elevator sensor
-    private ExtendColorSensor sensorLauncher;  // color sensor detecting ball at launcher
-    private ExtendColorSensor sensorIntake; // color sensor detecting ball at intake
-    private ExtendColorSensor sensorLift; // color sensor detecting ball at top of elevator
+    private TouchSensor sensorLiftLimit;
+    private TouchSensor liftTouch;
+    private ExtendColorSensor sensorIntake;
+    private ExtendColorSensor sensorLift;
     private boolean runOnce = false;
     private boolean runOnce2 = false;
     private boolean runOnce3 = false;
@@ -44,14 +42,12 @@ public class mechanism extends LinearOpMode {
     private Hashtable<String, Boolean> states = new Hashtable<>();
     private String launcherState = "";
 
-    
-    
     long waitTime1 = 0;
     String returnState1 = "";
     long timeZero = 0;
     double servoPos1 = 0.0;
     private double Angle = 0.0;
-    private int driveGamepad = 1; // DO NOT CHANGE (why?)
+    private int driveGamepad = 1; // DO NOT CHANGE
 
     private void BeginWaiting(String returnState, long wait)
     {
@@ -59,12 +55,9 @@ public class mechanism extends LinearOpMode {
         returnState1 = returnState;
         timeZero = System.currentTimeMillis();
     }
-
-
-    //------------OP Mode------------------
-        @Override
+    // TODO: add singletap move ball into launcher, cancel button, use state machine?
+    @Override
     public void runOpMode() {
-    	
         double configSpeedInt = 0.5;
         boolean motorMenuActivated;
         String configSpeedTxt;
@@ -74,8 +67,6 @@ public class mechanism extends LinearOpMode {
         long waitLaunchTelemetryUpdate = 0;
         long waitIntakeControl = 0;
         boolean intakeMode = false;
-        
-        //Hardware map
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
@@ -91,9 +82,7 @@ public class mechanism extends LinearOpMode {
         liftTouch = hardwareMap.get(TouchSensor.class, "liftTouch");
         sensorIntake = new ExtendColorSensor(hardwareMap.get(ColorSensor.class, "sensorIntake"));
         sensorLift = new ExtendColorSensor(hardwareMap.get(ColorSensor.class, "sensorLift"));
-        
-        
-        //disable motor encoders and setting directions
+        //sensorLauncher = hardwareMap.get(ColorSensor.class, "sensorLauncher");
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -102,9 +91,8 @@ public class mechanism extends LinearOpMode {
         leftBack.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
+        // Put initialization blocks here.
         launchTurn.setDirection(Servo.Direction.FORWARD);
-        
-        // Instance variables
         boolean ballCheckComplete = false;
         boolean ballInElevBottom = false;
         boolean ballInElevTop = false;
@@ -119,7 +107,7 @@ public class mechanism extends LinearOpMode {
             
             
             waitLaunchAngleControl = System.currentTimeMillis();
-            while (opModeIsActive()) {  //why a while loop with the same parameter after a if loop?
+            while (opModeIsActive()) {
                 //Angle = launchTurn.getPosition();
 
                 Drive();
@@ -400,46 +388,8 @@ public class mechanism extends LinearOpMode {
                 
             }
         }
-        }
+    }
 
-        // ----------------- Methods for sensors and touch sensors ------------
-
-        private boolean ballAtIntake() {
-        	return sensorIntake.green() >= 115 || sensorIntake.blue() >= 115;
-        }
-        private boolean ballAtTopElevator() {
-        	return sensorLift.green() >= 84 || sensorLift.blue() >= 84;
-        }
-        private boolean ballAtLauncher() {
-        	return sensorLauncher.green() >= 84 || sensorLauncher.blue() >= 84;
-        }
-        private boolean liftAtBottom() { //Using a boolean here makes your code more readable especially inside conditionals
-        	return liftTouch.isPressed();
-        	
-        private boolean liftAtTop() {
-        	return sensorLiftLimit.isPressed();
-        }
-
-
-
-
-
-
-        // This is a suggestion about how to process balls. We should develop these methods independently.
-        private void processBalls() {  
-        	if (!running) return;
-
-        	if (ballAtLauncher()) {
-        		tiltAndLaunch();
-        	}
-        	if (ballAtTopElevator() && !ballAtLauncher()) {
-        		pushToLauncher();
-        	}
-        	if (ballAtIntake() && !ballAtTopElevator()) {
-        		moveToElevator();
-        	}
-        }
-    
     private void getStates() {
         states.put("atBottom", liftTouch.isPressed());
         states.put("atTop", sensorLiftLimit.isPressed());
