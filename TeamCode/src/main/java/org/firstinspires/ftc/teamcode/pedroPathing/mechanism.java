@@ -24,7 +24,7 @@ public class mechanism extends LinearOpMode {
     private DcMotor liftUp;
     private CRServo intake;
     private Servo liftPush;
-    private ColorSensor sensorLauncher;
+    private ExtendColorSensor sensorLauncher;
     private DcMotor leftFront;
     private DcMotor rightFront;
     private DcMotor leftBack;
@@ -58,7 +58,7 @@ public class mechanism extends LinearOpMode {
     // TODO: add singletap move ball into launcher, cancel button, use state machine?
     @Override
     public void runOpMode() {
-        double configSpeedInt = 0.5;
+        double configSpeedInt = 1;
         boolean motorMenuActivated;
         String configSpeedTxt;
         long waitLaunchAngleControl;
@@ -145,8 +145,8 @@ public class mechanism extends LinearOpMode {
                         if (gamepad1.b && System.currentTimeMillis() >= timeSinceMotorSpeedMenuActivate + 500) { // Start motor loop / check if 500ms has passed
                             while (true) {
                                 //DONOTUSE Angle = launchTurn.getPosition();
-                                ((DcMotorEx) leftLaunch).setVelocity(-configSpeedInt * 2000);
-                                ((DcMotorEx) rightLaunch).setVelocity(configSpeedInt * 2000);
+                                ((DcMotorEx) leftLaunch).setVelocity(-configSpeedInt * 1750);
+                                ((DcMotorEx) rightLaunch).setVelocity(configSpeedInt * 1750);
                                 telemetry.addData("Launcher angle", launchTurn.getPosition());
                                 double launchAngle = launchTurn.getPosition();
 //                                if (launchAngle < 0.1) {
@@ -211,7 +211,7 @@ public class mechanism extends LinearOpMode {
                                 }
                                 if (gamepad1.dpad_up && !sensorLiftLimit.isPressed()) { // move lift up
                                     launchPush.setPosition(0.5);
-                                    ((DcMotorEx) liftUp).setVelocity(400);
+                                    ((DcMotorEx) liftUp).setVelocity(375);
                                     goingUp = true;
                                 }
                                 if (goingUp && sensorLiftLimit.isPressed()) {
@@ -220,7 +220,7 @@ public class mechanism extends LinearOpMode {
 
                                 if (gamepad1.dpad_down && !liftTouch.isPressed()) { // move lift down
                                     launchPush.setPosition(0.5);
-                                    ((DcMotorEx) liftUp).setVelocity(-400);
+                                    ((DcMotorEx) liftUp).setVelocity(-375);
                                     goingDown = true;
                                 }
                                 if (goingDown && liftTouch.isPressed()) {
@@ -263,31 +263,40 @@ public class mechanism extends LinearOpMode {
                     if (!ballInElevBottom && !goingUp && !goingDown) {
                         intake.setPower(-1);
                     }
-                    if (liftTouch.isPressed() && ballInElevBottom && !ballInElevTop) {
+                    if (liftTouch.isPressed()/* elev at bottom*/ && ballInElevBottom) {
                         if (!sensorLiftLimit.isPressed()) {
                             launchPush.setPosition(0.5);
-                            ((DcMotorEx) liftUp).setVelocity(400);
+                            ((DcMotorEx) liftUp).setVelocity(375);
                             goingUp = true;
                         }
                         if (goingUp && sensorLiftLimit.isPressed()) {
                             ((DcMotorEx) liftUp).setVelocity(0);
                             goingUp = false;
                         }
+                        if (!goingUp) {
+                            launchPush.setPosition(0.4);
+                            launchTurn.setPosition(0.5);
+                            liftPush.setPosition(0);
+                            sleep(700);
+                            launchTurn.setPosition(servoPos1);
+                            liftPush.setPosition(0.7);
+                        }
+
                     }
                 }
                 double launchAngle = launchTurn.getPosition();
-                if (launchAngle <= 0.1) {
-                    configSpeedInt = 1;
-                }
-                else if (launchAngle < 0.25) {
-                    configSpeedInt = 0.9;
-                }
-                else if (launchAngle == 0.7) {
-                    configSpeedInt = 0.7;
-                }
-                else {
-                    configSpeedInt = 0.7;
-                }
+//                if (launchAngle <= 0.1) {
+//                    configSpeedInt = 1;
+//                }
+//                else if (launchAngle < 0.25) {
+//                    configSpeedInt = 0.9;
+//                }
+//                else if (launchAngle == 0.7) {
+//                    configSpeedInt = 0.7;
+//                }
+//                else {
+//                    configSpeedInt = 0.7;
+//                }
                 if (gamepad1.a && System.currentTimeMillis() >= 300 + waitLaunchAngleControl) { // move launcher up
                     if (servoPos1 < 0) {servoPos1 = 0.0;}
                     if (servoPos1 > 1) {servoPos1 = 1.0;}
@@ -316,7 +325,7 @@ public class mechanism extends LinearOpMode {
                 }
                 if (gamepad1.dpad_up && !sensorLiftLimit.isPressed()) { // lift up
                     launchPush.setPosition(0.5);
-                    ((DcMotorEx) liftUp).setVelocity(400);
+                    ((DcMotorEx) liftUp).setVelocity(375);
                     goingUp = true;
                 }
                 if (goingUp && sensorLiftLimit.isPressed()) {
@@ -325,7 +334,7 @@ public class mechanism extends LinearOpMode {
 
                 if (gamepad1.dpad_down && !liftTouch.isPressed()) { // lift down
                     launchPush.setPosition(0.5);
-                    ((DcMotorEx) liftUp).setVelocity(-400);
+                    ((DcMotorEx) liftUp).setVelocity(-375);
                     goingDown = true;
                 }
                 if (goingDown && liftTouch.isPressed()) {//stop if at limit
@@ -375,6 +384,9 @@ public class mechanism extends LinearOpMode {
                 } else {
                     telemetry.addData("SLL Status", "Not at limit");
                 }
+                telemetry.addData("Ball check complete", ballCheckComplete);
+                telemetry.addData("Ball in bottom", ballInElevBottom);
+                telemetry.addData("Ball at top", ballInElevTop);
                 telemetry.addData("intake on", intake.getPower() < 0);
                 telemetry.addData("Launcher angle", launchTurn.getPosition());
                 telemetry.addData("ball detected Top", sensorLift.ballPresent(84));

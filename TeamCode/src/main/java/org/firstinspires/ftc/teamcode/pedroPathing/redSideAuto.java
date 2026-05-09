@@ -151,13 +151,13 @@ public class redSideAuto extends OpMode {
                 if (!runOnce) {
                     ((DcMotorEx) leftLaunch).setVelocity(-1500 * 0.6);
                     ((DcMotorEx) rightLaunch).setVelocity(1500 * 0.6);
-                    timeSince1 = System.currentTimeMillis();
+                    timeSince1 = System.currentTimeMillis(); // start launch motors and wait 2s
                     runOnce = true;
                 }
                 if (System.currentTimeMillis() >= timeSince1 + 2000) {
 
                     if (!runOnce2){
-                        launchPush.setPosition(1);
+                        launchPush.setPosition(1); //push ball 1 into launcher
                         timeSince2 = System.currentTimeMillis();
                         runOnce2 = true;
                     }
